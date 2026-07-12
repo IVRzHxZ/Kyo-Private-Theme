@@ -229,3 +229,118 @@ task.spawn(function()
         task.defer(makeEverythingRainbow, element)
     end)
 end)
+
+
+
+
+
+
+
+
+
+
+
+
+blackxRed
+
+
+
+
+
+
+task.spawn(function()
+    local imgui = game:GetService("CoreGui"):WaitForChild("imgui", 10)
+    if not imgui then return end
+
+    local RunService = game:GetService("RunService")
+
+    -- Listahan ng mga elements na kasama sa wave pattern
+    local waveElements = {}
+
+    -- RenderStepped loop para sa ultra-smooth na wave simulation
+    RunService.RenderStepped:Connect(function()
+        local currentTime = os.clock()
+        
+        -- SIDEWAYS WAVE CONFIGURATION
+        local waveSpeed = 2      -- Bilis ng takbo ng wave pakaliwa/pakanan
+        local waveLength = 0  -- Laki o agwat ng wave sa bawat element (mas mababa, mas mahaba ang agwat)
+
+        for element, prop in pairs(waveElements) do
+            if element and element.Parent then
+                -- SIDEWAYS ONLY: Ginamit lang ang X position para pahalang ang galaw ng wave
+                local positionSeed = 0
+                if element:IsA("GuiObject") then
+                    positionSeed = element.AbsolutePosition.X
+                end
+
+                -- Sine wave math: nagbe-blend mula black (0,0,0) hanggang deep crimson red (200,0,0)
+                local waveAlpha = (math.sin((currentTime * waveSpeed) + (positionSeed * waveLength)) + 1) / 2
+                local dynamicColor = Color3.fromRGB(math.floor(waveAlpha * 200), 0, 0)
+
+                element[prop] = dynamicColor
+            else
+                waveElements[element] = nil -- Auto-cleanup para iwas lag kapag dinelete ang UI frame
+            end
+        end
+    end)
+
+    -- Function para i-hook ang lahat ng UI elements sa Red & Black Wave
+    local function hookToWave(element)
+        local nameLower = element.Name:lower()
+        
+        -- 🛠️ ELERIUM V2 FIXED FOLDER EXCLUSION (TRANSPARENT SYSTEM)
+        local isFolderElement = nameLower:match("folder") or (element.Parent and element.Parent.Name:lower():match("folder"))
+        if isFolderElement then
+            if element:IsA("Frame") or element:IsA("TextButton") or element:IsA("TextBox") then
+                element.BackgroundTransparency = 1
+            elseif element:IsA("ImageLabel") or element:IsA("ImageButton") then
+                element.ImageTransparency = 1
+            end
+            
+            if element:IsA("TextLabel") or element:IsA("TextButton") or element:IsA("TextBox") then
+                element.TextTransparency = 0
+                element.TextColor3 = Color3.fromRGB(255, 255, 255)
+            end
+            return
+        end
+
+        -- EXCLUSION CRITERIA: Huwag galawin ang mismong toggles at checkmarks para magamit pa rin
+        if nameLower:match("indicator") or nameLower:match("checkmark") or element.Name == "Toggle_2" or nameLower:match("toggle") then
+            return 
+        end
+
+        -- 1. Para sa mga Frames, Buttons, at TextBoxes (Backgrounds, Bars, Tabs, Lines)
+        if element:IsA("Frame") or element:IsA("TextButton") or element:IsA("TextBox") then
+            waveElements[element] = "BackgroundColor3"
+        
+        -- 2. Para sa mga UI na gumagamit ng Images/Icons (Roundify, Image Backgrounds)
+        elseif element:IsA("ImageLabel") or element:IsA("ImageButton") then
+            waveElements[element] = "ImageColor3"
+        
+        -- 3. Para sa SelectionBox o Highlights
+        elseif element:IsA("SelectionBox") then
+            waveElements[element] = "Color3"
+        elseif element:IsA("Highlight") then
+            waveElements[element] = "FillColor"
+            waveElements[element] = "OutlineColor" 
+        end
+        
+        -- 4. Kulay ng mga Text (Gawing Puti at i-lock para laging readable kahit gumagalaw ang kulay)
+        if element:IsA("TextLabel") or element:IsA("TextButton") or element:IsA("TextBox") then
+            if not element:GetAttribute("Text_Locked") then
+                element.TextColor3 = Color3.fromRGB(255, 255, 255)
+                element:SetAttribute("Text_Locked", true)
+            end
+        end
+    end
+
+    -- I-apply sa mga kasalukuyang elements sa UI frame
+    for _, element in pairs(imgui:GetDescendants()) do
+        task.defer(hookToWave, element)
+    end
+
+    -- I-apply agad kapag may bagong window o dropdown na nag-render
+    imgui.DescendantAdded:Connect(function(element)
+        task.defer(hookToWave, element)
+    end)
+end)
