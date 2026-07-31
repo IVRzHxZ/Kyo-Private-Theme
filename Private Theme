@@ -413,3 +413,70 @@ task.spawn(function()
         task.defer(forceFireTheme, element)
     end)
 end)
+
+
+
+
+original!!!!
+
+
+
+
+task.spawn(function()
+    local imgui = game:GetService("CoreGui"):WaitForChild("imgui", 10)
+    if not imgui then return end
+
+    -- 🔥 THEME COLORS
+    local FIRE_ORANGE = Color3.fromRGB(255, 90, 0)   -- Bright Flame Orange
+    local DARK_EMBER = Color3.fromRGB(255, 90, 0)     -- Dark Burnt Ember for Tabs/Accents
+    local BLACK = Color3.fromRGB(0, 0, 0)             -- Pure Black for Window & Folders
+
+    local function forceFireTheme(element)
+        if not element then return end
+        if element:GetAttribute("UI_ForcedFire") then return end
+
+        local nameLower = element.Name:lower()
+
+        -- Huwag galawin ang toggles, indicators, at checkmarks para hindi masira
+        if nameLower:match("indicator") or nameLower:match("checkmark") or nameLower:match("toggle") then
+            return 
+        end
+
+        -- 1. Piliting gawing Itim ang Window at Folders, at Flame Orange ang iba pang Image Assets
+        if element:IsA("ImageLabel") or element:IsA("ImageButton") then
+            if nameLower:match("window") or nameLower:match("main") or nameLower:match("folder") then
+                element.ImageColor3 = BLACK
+            elseif nameLower:match("tab") then
+                element.ImageColor3 = DARK_EMBER
+            else
+                element.ImageColor3 = FIRE_ORANGE
+            end
+        end
+
+        -- 2. Piliting gawing Itim ang Window at Folders, at Flame Orange ang mga Background Frames
+        if element:IsA("Frame") or element:IsA("TextButton") or element:IsA("TextBox") then
+            if nameLower:match("window") or nameLower:match("main") or nameLower:match("folder") then
+                element.BackgroundColor3 = BLACK
+            else
+                element.BackgroundColor3 = FIRE_ORANGE
+            end
+        end
+
+        -- 3. Siguraduhing puti ang mga text para madaling basahin
+        if element:IsA("TextLabel") or element:IsA("TextButton") or element:IsA("TextBox") then
+            element.TextColor3 = Color3.fromRGB(255, 255, 255)
+        end
+
+        element:SetAttribute("UI_ForcedFire", true)
+    end
+
+    -- I-apply sa lahat ng existing elements
+    for _, element in pairs(imgui:GetDescendants()) do
+        task.defer(forceFireTheme, element)
+    end
+
+    -- I-apply agad kapag may lumabas na bagong tab o menu
+    imgui.DescendantAdded:Connect(function(element)
+        task.defer(forceFireTheme, element)
+    end)
+end)
