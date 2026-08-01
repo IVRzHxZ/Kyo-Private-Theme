@@ -364,10 +364,11 @@ task.spawn(function()
     local imgui = game:GetService("CoreGui"):WaitForChild("imgui", 10)
     if not imgui then return end
 
-    -- 🔥 THEME COLORS
-    local FIRE_ORANGE = Color3.fromRGB(255, 90, 0)   -- Bright Flame Orange
+    -- 🔥 SEPARATED THEME COLORS
+    local WINDOW_COLOR = Color3.fromRGB(25, 25, 30)   -- Distinct color for Main Window / Background
+    local FIRE_ORANGE = Color3.fromRGB(255, 90, 0)    -- Bright Flame Orange for components
     local DARK_EMBER = Color3.fromRGB(255, 90, 0)     -- Dark Burnt Ember for Tabs/Accents
-    local BLACK = Color3.fromRGB(0, 0, 0)             -- Pure Black for Window & Folders
+    local BLACK = Color3.fromRGB(0, 0, 0)             -- Pure Black for Folders
 
     local function forceFireTheme(element)
         if not element then return end
@@ -380,9 +381,11 @@ task.spawn(function()
             return 
         end
 
-        -- 1. Piliting gawing Itim ang Window at Folders, at Flame Orange ang iba pang Image Assets
+        -- 1. Hiwalay na kulay para sa Window, Folders, at iba pang Image Assets
         if element:IsA("ImageLabel") or element:IsA("ImageButton") then
-            if nameLower:match("window") or nameLower:match("main") or nameLower:match("folder") then
+            if nameLower:match("window") or nameLower:match("main") then
+                element.ImageColor3 = WINDOW_COLOR
+            elseif nameLower:match("folder") then
                 element.ImageColor3 = BLACK
             elseif nameLower:match("tab") then
                 element.ImageColor3 = DARK_EMBER
@@ -391,9 +394,11 @@ task.spawn(function()
             end
         end
 
-        -- 2. BACKGROUND FRAMES (May white-list para sa mga specific UI elements lang)
+        -- 2. BACKGROUND FRAMES (Hiwalay na kulay para sa Window, Folders, at Elements)
         if element:IsA("Frame") or element:IsA("TextButton") or element:IsA("TextBox") then
-            if nameLower:match("window") or nameLower:match("main") or nameLower:match("folder") then
+            if nameLower:match("window") or nameLower:match("main") then
+                element.BackgroundColor3 = WINDOW_COLOR
+            elseif nameLower:match("folder") then
                 element.BackgroundColor3 = BLACK
             elseif nameLower:match("addswitch") 
                 or nameLower:match("addbutton") 
