@@ -352,7 +352,8 @@ end)
 
 
 
-orange fire theme 
+orange fire theme orignal 1 ontop
+
 
 
 
@@ -364,24 +365,24 @@ task.spawn(function()
     local imgui = game:GetService("CoreGui"):WaitForChild("imgui", 10)
     if not imgui then return end
 
-    -- 🔥 SEPARATED THEME COLORS
-    local WINDOW_COLOR = Color3.fromRGB(25, 25, 30)   -- Distinct color for Main Window / Background
-    local FIRE_ORANGE = Color3.fromRGB(255, 90, 0)    -- Bright Flame Orange for components
-    local DARK_EMBER = Color3.fromRGB(255, 90, 0)     -- Dark Burnt Ember for Tabs/Accents
-    local BLACK = Color3.fromRGB(0, 0, 0)             -- Pure Black for Folders
+    -- 🔥 FIXED THEME COLORS
+    local WINDOW_COLOR = Color3.fromRGB(20, 20, 25)    -- Dark, clean background
+    local FIRE_ORANGE = Color3.fromRGB(255, 90, 0)     -- Bright Flame Orange for accents/toggles
+    local DARK_EMBER = Color3.fromRGB(255, 90, 0)      -- Dark Burnt Ember for Tabs/Sub-headers
+    local BLACK = Color3.fromRGB(10, 10, 12)           -- Deep dark/black for Folders
 
     local function forceFireTheme(element)
-        if not element then return end
+        if not element or not element:IsA("GuiObject") then return end
         if element:GetAttribute("UI_ForcedFire") then return end
 
         local nameLower = element.Name:lower()
 
-        -- Huwag galawin ang mga indicators, checkmarks, at toggles para hindi masira ang default look
+        -- Proteksyon para sa indicators, checkmarks, at toggles para hindi masira ang visuals
         if nameLower:match("indicator") or nameLower:match("checkmark") or nameLower:match("toggle") then
             return 
         end
 
-        -- 1. Hiwalay na kulay para sa Window, Folders, at iba pang Image Assets
+        -- 1. IMAGE ASSETS (Window, Folders, and Icons)
         if element:IsA("ImageLabel") or element:IsA("ImageButton") then
             if nameLower:match("window") or nameLower:match("main") then
                 element.ImageColor3 = WINDOW_COLOR
@@ -394,36 +395,37 @@ task.spawn(function()
             end
         end
 
-        -- 2. BACKGROUND FRAMES (Hiwalay na kulay para sa Window, Folders, at Elements)
+        -- 2. BACKGROUNDS & FRAMES (Safe recoloring without breaking UI visibility)
         if element:IsA("Frame") or element:IsA("TextButton") or element:IsA("TextBox") then
             if nameLower:match("window") or nameLower:match("main") then
                 element.BackgroundColor3 = WINDOW_COLOR
             elseif nameLower:match("folder") then
                 element.BackgroundColor3 = BLACK
+            elseif nameLower:match("tab") then
+                element.BackgroundColor3 = DARK_EMBER
             elseif nameLower:match("addswitch") 
                 or nameLower:match("addbutton") 
                 or nameLower:match("addslider") 
                 or nameLower:match("adddropdown") 
                 or nameLower:match("addtextbox")
                 or nameLower:match("bar") then
+                
                 element.BackgroundColor3 = FIRE_ORANGE
             end
         end
 
-        -- 3. Siguraduhing puti ang mga text para madaling basahin
-        if element:IsA("TextLabel") or element:IsA("TextButton") or element:IsA("TextBox") then
-            element.TextColor3 = Color3.fromRGB(255, 255, 255)
-        end
+        -- ❌ REMOVED SECTION 3 (TEXT COLOR OVERRIDE) 
+        -- Text elements will now keep their default ImGui styles/colors.
 
         element:SetAttribute("UI_ForcedFire", true)
     end
 
-    -- I-apply sa lahat ng existing elements
-    for _, element in pairs(imgui:GetDescendants()) do
+    -- I-apply sa lahat ng kasalukuyang UI elements
+    for _, element in ipairs(imgui:GetDescendants()) do
         task.defer(forceFireTheme, element)
     end
 
-    -- I-apply agad kapag may lumabas na bagong tab o menu
+    -- I-apply agad sa mga bagong elements (tabs, menus, buttons) na lilitaw dynamically
     imgui.DescendantAdded:Connect(function(element)
         task.defer(forceFireTheme, element)
     end)
